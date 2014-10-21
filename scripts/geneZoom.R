@@ -23,6 +23,7 @@ suppressPackageStartupMessages({
   require(gridBase);
 });
 
+options(warn = -1);
 
 #############################################################
 #
