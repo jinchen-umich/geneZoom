@@ -553,11 +553,14 @@ if ( file.exists( args[['matchedLines']]) ) {
 # deal with some parameters
 #
 
-if (is.null(args[['geneName']])||(args[['geneName']] == "NULL"))
+if (is.null(args[['title']]))
 {
-	args[['title']] <- "Gene variants identified";
-} else {
-	args[['title']] <- paste(args[['geneName']],"variants identified");
+	if (is.null(args[['geneName']])||(args[['geneName']] == "NULL"))
+	{
+		args[['title']] <- "Gene variants identified";
+	} else {
+		args[['title']] <- paste(args[['geneName']],"variants identified");
+	}
 }
 
 if((is.null(args[['xlab']]))||(args[['xlab']] == "NULL"))
