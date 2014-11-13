@@ -869,7 +869,7 @@ sub readAnnotationFlags
 				$anno		= $tmp[0];
 				$start	= $tmp[1];
 				$end		= $tmp[2];
-				$color  = $tmp[1];
+				$color  = "NA";
 			}
 			case 4
 			{
@@ -1673,6 +1673,25 @@ sub recreateAnnotationAndColorStr
 			$newColorStr	=	$newColorStr.",".$tmp[1];
 			$beanNum			=	$beanNum + 1;
 		}
+	}
+
+	if (($newAnnoStr eq "NA")&&($newColorStr eq "NA")&&($beanNum == -1))
+	{
+		$newAnnoStr		= "other";
+		$newColorStr	= "black";
+		$beanNum			= 1;
+	}
+	else
+	{
+		$newAnnoStr		= $newAnnoStr.",other";
+		$newColorStr	= $newColorStr.",black";
+		$beanNum			= $beanNum + 1;
+	}
+
+	if ($beanNum >= 10)
+	{
+		$errmsg = "Too many annotated SNP categories! Please don't difine more than 10 annotated SNP categories in flag value!";
+		$errmsg = createErrMsg($errmsg);
 	}
 
 	return ($errmsg,$newAnnoStr,$newColorStr,$beanNum);
