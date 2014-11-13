@@ -136,14 +136,27 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 
 ######## Draw scatter plot
 ########## Prepare some paramters of scatter plot, such x range, y range
-	phenotypeMax <- max(scatter$phenotype);
-	phenotypeMin <- min(scatter$phenotype);
-	scatterXRange <- c(geneRegion$geneStart,geneRegion$geneEnd);
-	scatterYRange <- c(phenotypeMin - 0.05 * (phenotypeMax - phenotypeMin),phenotypeMax + 0.05 * (phenotypeMax - phenotypeMin));
-	meanOfPhenotype <- mean(allData$phenotype);
-	sdOfPhenotype <- sd(allData$phenotype);
-	upSD <- meanOfPhenotype + sdOfPhenotype;
-	downSD <- meanOfPhenotype - sdOfPhenotype;
+	if (as.numeric(args[['beanPlotNum']]) == 1)
+	{
+		phenotypeMax <- max(otherData$phenotype);
+		phenotypeMin <- min(otherData$phenotype);
+		scatterXRange <- c(geneRegion$geneStart,geneRegion$geneEnd);
+		scatterYRange <- c(phenotypeMin - 0.05 * (phenotypeMax - phenotypeMin),phenotypeMax + 0.05 * (phenotypeMax - phenotypeMin));
+		meanOfPhenotype <- mean(allData$phenotype);
+		sdOfPhenotype <- sd(allData$phenotype);
+		upSD <- meanOfPhenotype + sdOfPhenotype;
+		downSD <- meanOfPhenotype - sdOfPhenotype;
+	} else if (as.numeric(args[['beanPlotNum']]) > 1) {
+		phenotypeMax <- max(scatter$phenotype);
+		phenotypeMin <- min(scatter$phenotype);
+		scatterXRange <- c(geneRegion$geneStart,geneRegion$geneEnd);
+		scatterYRange <- c(phenotypeMin - 0.05 * (phenotypeMax - phenotypeMin),phenotypeMax + 0.05 * (phenotypeMax - phenotypeMin));
+		meanOfPhenotype <- mean(allData$phenotype);
+		sdOfPhenotype <- sd(allData$phenotype);
+		upSD <- meanOfPhenotype + sdOfPhenotype;
+		downSD <- meanOfPhenotype - sdOfPhenotype;
+	}
+
 ########## Enter scatter plot viewport. When the scatter plot is draw, we will go back to the plot viewport.
 	pushViewport(viewport(layout.pos.col=1,layout.pos.row=1,xscale=scatterXRange, yscale=scatterYRange));
 	grid.rect(gp=gpar(lty="solid",col="black"));
@@ -151,9 +164,12 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 	#grid.yaxis(at=seq(scatterYRange[1],scatterYRange[2],100),gp=gpar(cex=args[['scatterYAxisCex']]));
 	grid.yaxis(gp=gpar(cex=args[['scatterYAxisCex']]));
 ########## Draw scatter points
-	for (i in 1:length(scatter$new_pos))
+	if (as.numeric(args[['beanPlotNum']]) > 1)
 	{
-		grid.points(scatter$new_pos[i], scatter$phenotype[i],size=unit(2, "mm"),gp=gpar(col=as.character(scatter$color[i])));
+		for (i in 1:length(scatter$new_pos))
+		{
+			grid.points(scatter$new_pos[i], scatter$phenotype[i],size=unit(2, "mm"),gp=gpar(col=as.character(scatter$color[i])));
+		}
 	}
 ########## Draw mean of phenotype line
 	grid.lines(x=unit(c(geneRegion$geneStart,geneRegion$geneEnd),"native"),y=unit(c(meanOfPhenotype,meanOfPhenotype),"native"),gp=gpar(col=args[['phenotyeMeanLineColor']],lty=args[['phenotyeMeanLineType']]));
@@ -173,10 +189,13 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 	pushViewport(viewport(layout.pos.col=1,layout.pos.row=2,xscale=scatterXRange, yscale=c(0,1)));
 	#grid.rect(gp=gpar(lty="solid",col="black"));
 ########## Draw matched lines
-	for (i in 1:length(scatter$new_pos))
+	if (as.numeric(args[['beanPlotNum']]) > 1)
 	{
-		#grid.lines(x=unit(c(as.numeric(scatter$new_pos[i]),as.numeric(scatter$pos_on_region[i])),"native"),y=unit(c(1,-0.1),"native"),gp=gpar(col=cols[annotationColors[scatter$annotation[i]]]));
-		grid.lines(x=unit(c(as.numeric(scatter$new_pos[i]),as.numeric(scatter$pos_on_region[i])),"native"),y=unit(c(1,-0.1),"native"),gp=gpar(col=as.character(scatter$color[i])));
+		for (i in 1:length(scatter$new_pos))
+		{
+			#grid.lines(x=unit(c(as.numeric(scatter$new_pos[i]),as.numeric(scatter$pos_on_region[i])),"native"),y=unit(c(1,-0.1),"native"),gp=gpar(col=cols[annotationColors[scatter$annotation[i]]]));
+			grid.lines(x=unit(c(as.numeric(scatter$new_pos[i]),as.numeric(scatter$pos_on_region[i])),"native"),y=unit(c(1,-0.1),"native"),gp=gpar(col=as.character(scatter$color[i])));
+		}
 	}
 ########## Go back to plot viewport
 	popViewport();
@@ -220,6 +239,11 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 
 	if (length(annotations) == 1)
 	{
+		 beanplot(otherData$phenotype,col=list("black"),names=list("other"),bw="nrd0",what=c(1,1,1,0),ylim=scatterYRange,log="",yaxs="i",yaxt="n",xaxt="n");
+		 axis(1,at=c(1),labels=FALSE);
+		 #text(x=seq(1,2,by=1), labels=list(as.character(annotations[1]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
+		 mtext(side=1,at=c(1),text=c("other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1));
+	} else if (length(annotations) == 2) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 	
@@ -227,7 +251,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,2,by=1),labels=FALSE);
 		#text(x=seq(1,2,by=1), labels=list(as.character(annotations[1]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,2,by=1)),text=c(as.character(annotations[1]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2));
-	} else if (length(annotations) == 2) {
+	} else if (length(annotations) == 3) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -239,7 +263,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,3,by=1),labels=FALSE);
 		#text(x=seq(1,3,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,3,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1));
-	} else if (length(annotations) == 3) {
+	} else if (length(annotations) == 4) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -253,7 +277,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,4,by=1),labels=FALSE);
 		#text(x=seq(1,4,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,4,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2));
-	} else if (length(annotations) == 4) {
+	} else if (length(annotations) == 5) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -270,7 +294,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,5,by=1),labels=FALSE);
 		#text(x=seq(1,5,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,5,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1));
-	} else if (length(annotations) == 5) {
+	} else if (length(annotations) == 6) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -290,7 +314,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,6,by=1),labels=FALSE);
 		#text(x=seq(1,6,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,6,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2));
-	} else if (length(annotations) == 6) {
+	} else if (length(annotations) == 7) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -313,7 +337,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,7,by=1),labels=FALSE);
 		#text(x=seq(1,7,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,7,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1));
-	} else if (length(annotations) == 7) {
+	} else if (length(annotations) == 8) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -339,7 +363,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,8,by=1),labels=FALSE);
 		#text(x=seq(1,8,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,8,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2));
-	} else if (length(annotations) == 8) {
+	} else if (length(annotations) == 9) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -368,7 +392,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,9,by=1),labels=FALSE);
 		#text(x=seq(1,9,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),as.character(annotations[8]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,9,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),as.character(annotations[8]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1));
-	} else if (length(annotations) == 9) {
+	} else if (length(annotations) == 10) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
@@ -400,7 +424,7 @@ gzplot <- function(geneRegion,scatter,allData,otherData,matchedLines,args){
 		axis(1,at=seq(1,10,by=1),labels=FALSE);
 		#text(x=seq(1,10,by=1), labels=list(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),as.character(annotations[8]),as.character(annotations[9]),"other"),srt=beanPlotXAxisLabelAngle,pos=2,xpd=TRUE,cex=beanPlotXAxisLableCex);
 		mtext(side=1,at=c(seq(1,10,by=1)),text=c(as.character(annotations[1]),as.character(annotations[2]),as.character(annotations[3]),as.character(annotations[4]),as.character(annotations[5]),as.character(annotations[6]),as.character(annotations[7]),as.character(annotations[8]),as.character(annotations[9]),"other"),cex=beanPlotXAxisLableCex,line=c(beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2,beanPlotXAxisLablePos1,beanPlotXAxisLablePos2));
-	} else if (length(annotations) == 10) {
+	} else if (length(annotations) == 11) {
 		beanData1 <- scatter$phenotype[(scatter$annotation == as.character(annotations[1]))];
 		col1 <- as.character(colors[1]);
 
